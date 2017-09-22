@@ -63,7 +63,7 @@ var getandIncrement = (req,res,data)=>{
 		var latestValue = resp.data.value;
 		latestValue = latestValue +data;
 		latestDate = resp.data.date;
-		var ipGuest = req.ip;
+		var ipGuest = req.connection.remoteAddress
 
 		axios.put('https://btnproject-eef7a.firebaseio.com/counter.json',{value:latestValue,date:Date.now(),ip:ipGuest}).then((resp)=>{
 
