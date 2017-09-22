@@ -68,7 +68,7 @@ var getandIncrement = (req,res,data)=>{
 		axios.put('https://btnproject-eef7a.firebaseio.com/counter.json',{value:latestValue,date:Date.now(),ip:ipGuest}).then((resp)=>{
 
 		}).then(()=>{
-			res.send({value:latestValue,date:latestDate});
+			res.send({value:latestValue,date:latestDate,currentTime:Date.now()});
 		})
 	});
 }

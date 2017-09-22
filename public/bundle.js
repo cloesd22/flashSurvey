@@ -81,10 +81,11 @@ function winload(){
 		Object(__WEBPACK_IMPORTED_MODULE_0__xhttpFunctions_js__["a" /* serverPOST */])('/push',(res)=>{
 			var serverResponse = JSON.parse(res);
 			var currentCount = serverResponse.value;
-			var currentdateValue = formatDateSince(serverResponse.date).value;
-			var currentdateString = formatDateSince(serverResponse.date).name;
+			var dateObject = (formatDateSince(serverResponse.currentTime,serverResponse.date));
+
+
 			document.getElementById("counter").innerHTML="Counter: "+currentCount;
-			document.getElementById("counterSubtext").innerHTML=`It was last clicked ${currentdateValue} ${currentdateString} ago.`;
+			document.getElementById("counterSubtext").innerHTML=`It was last clicked ${dateObject.value} ${dateObject.name} ago.`;
 
 		},'')
 	})
@@ -92,7 +93,7 @@ function winload(){
 }
 window.onload = winload;
 
-function formatDateSince(dateDifference){
+function formatDateSince(currentServerTime,dateDifference){
 	//takes in dateNow value (miliseconds) and returns
 	//either seconds,minutes,hours,days etc if that value is > 2.
 
