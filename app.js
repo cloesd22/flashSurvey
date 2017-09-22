@@ -11,9 +11,13 @@
 const express = require('express');
 const axios = require('axios');
 const hbs = require('hbs');
+const dd = require('ddos');
 
 
+var ddos = new dd({burst:1,limit:10})
 var app = express();
+app.use(ddos.express);
+
 var currentcount = {value:0};
 const port = process.env.PORT || 3000;
 //setup

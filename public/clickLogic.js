@@ -2,16 +2,19 @@ import {serverPOST,serverGET} from './xhttpFunctions.js';
 
 function winload(){
 
-var button = document.getElementById("thebutton").addEventListener("click", ()=>{
-	console.log("buttonclicked");
+	var button = document.getElementById("thebutton").addEventListener("click", ()=>{
 
-	serverPOST('/push',(res)=>{
-		var currentCount = JSON.parse(res).value;
-		document.getElementById("counter").innerHTML="Counter: "+currentCount;
-
-	},'')
-
-})
+		console.log("buttonclicked");
+		
+		serverPOST('/push',(res)=>{
+			console.log(res);
+			
+			var currentCount = JSON.parse(res).value;
+			document.getElementById("counter").innerHTML="Counter: "+currentCount;
+			
+			
+		},'')
+	})
 
 }
 

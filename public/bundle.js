@@ -74,16 +74,19 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 function winload(){
 
-var button = document.getElementById("thebutton").addEventListener("click", ()=>{
-	console.log("buttonclicked");
+	var button = document.getElementById("thebutton").addEventListener("click", ()=>{
 
-	Object(__WEBPACK_IMPORTED_MODULE_0__xhttpFunctions_js__["a" /* serverPOST */])('/push',(res)=>{
-		var currentCount = JSON.parse(res).value;
-		document.getElementById("counter").innerHTML="Counter: "+currentCount;
-
-	},'')
-
-})
+		console.log("buttonclicked");
+		
+		Object(__WEBPACK_IMPORTED_MODULE_0__xhttpFunctions_js__["a" /* serverPOST */])('/push',(res)=>{
+			console.log(res);
+			
+			var currentCount = JSON.parse(res).value;
+			document.getElementById("counter").innerHTML="Counter: "+currentCount;
+			
+			
+		},'')
+	})
 
 }
 
