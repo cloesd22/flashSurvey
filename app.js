@@ -15,6 +15,7 @@ const hbs = require('hbs');
 
 var app = express();
 var currentcount = {value:0};
+const port = process.env.PORT || 3000;
 //setup
 app.use(express.static(__dirname + '/public'));
 app.set('view engine','hbs');
@@ -65,4 +66,4 @@ var getandIncrement = (res,data)=>{
 
 
 
-app.listen(3000);
+app.listen(port);
