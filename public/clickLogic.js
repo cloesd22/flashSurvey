@@ -50,7 +50,7 @@ function winload(){
 		}else{
 
 			document.getElementById("currentResults").style.visibility='hidden';
-			document.getElementById("showResults").innerHTML = "showResults"
+			document.getElementById("showResults").innerHTML = "Show Results"
 		}
 		
 	});
