@@ -12,6 +12,7 @@ const express = require('express');
 const axios = require('axios');
 const hbs = require('hbs');
 const dd = require('ddos');
+var gl = require('geoip-lite');
 
 
 var ddos = new dd({burst:10,limit:25})
@@ -59,16 +60,24 @@ var getandIncrement = (req,res,data)=>{
 	//first argument is the response object, that has method .send to send to response.
 	axios.get('https://btnproject-eef7a.firebaseio.com/counter.json').then((resp)=>{
 
-		console.log(resp.data.value);
 		var latestValue = resp.data.value;
 		latestValue = latestValue +data;
 		latestDate = resp.data.date;
 		var ipGuest = req.headers['x-forwarded-for'];
 
-		axios.put('https://btnproject-eef7a.firebaseio.com/counter.json',{value:latestValue,date:Date.now(),ip:ipGuest}).then((resp)=>{
+		
+
+		
+		var geo = gl.lookup(ipGuest);
+
+		if(!geo){
+			geo = "Unknown Location"
+		}
+
+		axios.put('https://btnproject-eef7a.firebaseio.com/counter.json',{value:latestValue,date:Date.now()}).then((resp)=>{
 
 		}).then(()=>{
-			res.send({value:latestValue,date:latestDate,currentTime:Date.now()});
+			res.send({value:latestValue,date:latestDate,currentTime:Date.now(),loc:geo});
 		})
 	});
 }
@@ -93,10 +102,10 @@ function formatDateSince(dateDifference){
 	var days = hours/60;
 
 	var ElementArray = [
-		{name:"Seconds",value:seconds},
-		{name:"Minutes",value:minutes},
-		{name:"Hours",value:hours},
-		{name:"Days",value:days}
+	{name:"Seconds",value:seconds},
+	{name:"Minutes",value:minutes},
+	{name:"Hours",value:hours},
+	{name:"Days",value:days}
 	];
 
 	var dateValue = ElementArray[0].value; 

@@ -82,10 +82,8 @@ function winload(){
 			var serverResponse = JSON.parse(res);
 			var currentCount = serverResponse.value;
 			var dateObject = (formatDateSince(serverResponse.currentTime,serverResponse.date));
-
-
 			document.getElementById("counter").innerHTML="Counter: "+currentCount;
-			document.getElementById("counterSubtext").innerHTML=`It was last clicked ${dateObject.value} ${dateObject.name} ago.`;
+			document.getElementById("counterSubtext").innerHTML=`It was last clicked ${dateObject.value} ${dateObject.name} ago from ${serverResponse.loc}`;
 
 		},'')
 	})
