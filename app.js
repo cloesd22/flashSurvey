@@ -35,7 +35,8 @@ app.get('/',(req,res)=>{
 		var latestValue = resp.data.value;
 		var lastButtonDate = formatDateSince(resp.data.date);
 		var latestDate = resp.data.date;
-		var geo = getloc(req,"city");
+		var latestIP = resp.data.loc;
+		var geo = getloc(null,latestIP,"city");
 
 		res.render('thebutton.hbs',{currentcount:latestValue,date:latestDate, dateInital:lastButtonDate,loc:geo});
 
@@ -65,14 +66,19 @@ var getandIncrement = (req,res,data)=>{
 		var latestValue = resp.data.value;
 		latestValue = latestValue +data;
 		latestDate = resp.data.date;
+		latestIP = resp.data.loc;
 		var ipGuest = req.headers['x-forwarded-for'];
 
 		
 
 		
-		var geo = getloc(req,"city");
+		var geo = getloc(null,latestIP,"city");
 
-		axios.put('https://btnproject-eef7a.firebaseio.com/counter.json',{value:latestValue,date:Date.now()}).then((resp)=>{
+/*		if(geo===undefined){
+			geo = "Unknown Location";
+		}*/
+		console.log("val = " +ipGuest);
+		axios.put('https://btnproject-eef7a.firebaseio.com/counter.json',{value:latestValue,date:Date.now(),loc:ipGuest}).then((resp)=>{
 
 		}).then(()=>{
 			res.send({value:latestValue,date:latestDate,currentTime:Date.now(),loc:geo});
@@ -85,39 +91,45 @@ var getandIncrement = (req,res,data)=>{
 })
 */
 
-function getloc(req,property){
+function getloc(req,ip,property){
 
-	/*	properties example:
-			{ range: [ 3479297920, 3479301339 ],
-			  country: 'US',
-			  region: 'TX',
-			  city: 'San Antonio',
-			  ll: [ 29.4889, -98.3987 ],
-			  metro: 641,
-			  zip: 78218 }*/
+/*properties example:
+{range: [ 3479297920, 3479301339 ],
+country: 'US',
+region: 'TX',
+city: 'San Antonio',
+	ll: [ 29.4889, -98.3987 ],
+metro: 641,
+zip: 78218 }*/
 
-	var ipGuest = req.headers['x-forwarded-for'];
-	var geo = gl.lookup(ipGuest);
-	if(!geo){
-		geo = "Unknown Location"
+	if (req){
+		var ipGuest = req.headers['x-forwarded-for'];
+	}else{
+		var ipGuest = ip;
 	}
 
-	return geo[property];
+	var geo = gl.lookup(ipGuest);
+	if(geo===null){
+		geo = "Unknown Location"
+		return geo;
+	}
+
+	return geo;
 
 }
 
-function getCity(req){
-	var ipGuest = req.headers['x-forwarded-for'];
-	var geo = gl.lookup(ipGuest);
-	if(!geo){
-		geo = "Unknown Location"
+	function getCity(req){
+		var ipGuest = req.headers['x-forwarded-for'];
+		var geo = gl.lookup(ipGuest);
+		if(!geo){
+			geo = "Unknown Location"
+		}
+
+		return geo.city;
 	}
 
-	return geo.city;
-}
 
-
-function formatDateSince(dateDifference){
+	function formatDateSince(dateDifference){
 	//takes in dateNow value (miliseconds) and returns
 	//either seconds,minutes,hours,days etc if that value is > 2.
 
