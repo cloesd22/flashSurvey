@@ -114,19 +114,10 @@ zip: 78218 }*/
 		return geo;
 	}
 
-	return geo;
+	return geo[property];
 
 }
 
-	function getCity(req){
-		var ipGuest = req.headers['x-forwarded-for'];
-		var geo = gl.lookup(ipGuest);
-		if(!geo){
-			geo = "Unknown Location"
-		}
-
-		return geo.city;
-	}
 
 
 	function formatDateSince(dateDifference){

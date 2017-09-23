@@ -2,7 +2,7 @@ import {serverPOST,serverGET} from './xhttpFunctions.js';
 
 function winload(){
 
-	var button = document.getElementById("thebutton").addEventListener("click", ()=>{
+	var button = document.getElementById("forButton").addEventListener("click", ()=>{
 
 		console.log("buttonclicked");
 		
@@ -11,7 +11,21 @@ function winload(){
 			var currentCount = serverResponse.value;
 			var dateObject = (formatDateSince(serverResponse.currentTime,serverResponse.date));
 			document.getElementById("counter").innerHTML="Counter: "+currentCount;
-			document.getElementById("counterSubtext").innerHTML=`It was last clicked ${dateObject.value} ${dateObject.name} ago from ${serverResponse.loc}`;
+			document.getElementById("counterSubtext").innerHTML=`It was last clicked ${dateObject.value} ${dateObject.name} ago from ${serverResponse.loc}.`;
+
+		},'')
+	})
+
+	var button = document.getElementById("againstButton").addEventListener("click", ()=>{
+
+		console.log("buttonclicked");
+		
+		serverPOST('/push',(res)=>{
+			var serverResponse = JSON.parse(res);
+			var currentCount = serverResponse.value;
+			var dateObject = (formatDateSince(serverResponse.currentTime,serverResponse.date));
+			document.getElementById("counter").innerHTML="Counter: "+currentCount;
+			document.getElementById("counterSubtext").innerHTML=`It was last clicked ${dateObject.value} ${dateObject.name} ago from ${serverResponse.loc}.`;
 
 		},'')
 	})
@@ -33,10 +47,10 @@ function formatDateSince(currentServerTime,dateDifference){
 	var days = hours/60;
 
 	var ElementArray = [
-		{name:"Seconds",value:seconds},
-		{name:"Minutes",value:minutes},
-		{name:"Hours",value:hours},
-		{name:"Days",value:days}
+	{name:"Seconds",value:seconds},
+	{name:"Minutes",value:minutes},
+	{name:"Hours",value:hours},
+	{name:"Days",value:days}
 	];
 
 	var dateValue = ElementArray[0].value; 
