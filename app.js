@@ -5,6 +5,7 @@
 //counts participants(done)
 //presents two buttonscounts both clicks(done)
 
+//rate limitter based on path. ie; you can refresh any amount of times, but only 1 vote.
 //Move Repo to private storage
 //buttons represent options
 //graphs results in real time
@@ -16,11 +17,10 @@ const dd = require('ddos');
 var gl = require('geoip-lite');
 
 
-var ddos = new dd({burst:10,limit:25})
+var ddos = new dd({burst:5,limit:5})
 var app = express();
 app.use(ddos.express);
 
-var currentcount = {value:0};
 const port = process.env.PORT || 3001;
 //setup
 app.use(express.static(__dirname + '/public'));
@@ -55,21 +55,29 @@ app.get('/',(req,res)=>{
 app.post('/pushFor',(req,res)=>{
 
 	getandIncrement(req,res,1,true);
-	console.log("callfor");
 	
 })
 
 app.post('/pushAgainst',(req,res)=>{
 
 	getandIncrement(req,res,1,false);
-	console.log("callagainst");
+
 	
 })
 
 app.get('/hello',(req,res)=>{
-	axios.put('https://btnproject-eef7a.firebaseio.com/counter.json',{value:0,date:Date.now()}).then((resp)=>{
+	//resets the voting
+
+	var defaultVotes = {value:0,
+		date:Date.now(),
+		loc:"115.64.64.83",
+		for:0,
+		against:0};
+
+	axios.put('https://btnproject-eef7a.firebaseio.com/counter.json',defaultVotes).then((resp)=>{
 
 	})
+
 })
 
 
@@ -92,9 +100,6 @@ var getandIncrement = (req,res,data,vote)=>{
 		
 		var geo = getloc(null,latestIP,"city");
 
-		console.log("val = " +ipGuest);
-		console.log(currentFor);
-		console.log(currentAgainst);
 
 		if (vote==true){
 
@@ -125,12 +130,32 @@ var getandIncrement = (req,res,data,vote)=>{
 	});
 }
 
-/*app.get('/*',(req,res)=>{
-	res.send('Wer u goin boiss?');
-})
-*/
+
 
 function getloc(req,ip,property){
+
+if (req){
+	var ipGuest = req.headers['x-forwarded-for'];
+}else{
+	var ipGuest = ip;
+}
+
+if(ip==null){
+	return geo="an Unknown Location";
+}
+
+var geo = gl.lookup(ipGuest);
+console.log(geo);
+
+if(geo[property]===null){
+	geo = "an Unknown Location"
+	console.log("fek otheroppo")
+	return geo;
+}
+
+console.log("fuckitgotwawy");
+return geo[property];
+
 
 /*properties example:
 {range: [ 3479297920, 3479301339 ],
@@ -140,20 +165,6 @@ city: 'San Antonio',
 	ll: [ 29.4889, -98.3987 ],
 metro: 641,
 zip: 78218 }*/
-
-if (req){
-	var ipGuest = req.headers['x-forwarded-for'];
-}else{
-	var ipGuest = ip;
-}
-
-var geo = gl.lookup(ipGuest);
-if(geo===null){
-	geo = "an Unknown Location"
-	return geo;
-}
-
-return geo[property];
 
 }
 
