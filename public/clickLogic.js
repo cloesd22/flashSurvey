@@ -2,35 +2,62 @@ import {serverPOST,serverGET} from './xhttpFunctions.js';
 
 function winload(){
 
-	var button = document.getElementById("forButton").addEventListener("click", ()=>{
+	var forButton = document.getElementById("forButton").addEventListener("click", ()=>{
 
-		console.log("buttonclicked");
+		console.log("forButtonClicked");
+
 		
-		serverPOST('/push',(res)=>{
+		serverPOST('/pushFor',(res)=>{
 			var serverResponse = JSON.parse(res);
+			console.log("vasl"+serverResponse);
 			var currentCount = serverResponse.value;
 			var dateObject = (formatDateSince(serverResponse.currentTime,serverResponse.date));
-			document.getElementById("counter").innerHTML="Counter: "+currentCount;
-			document.getElementById("counterSubtext").innerHTML=`It was last clicked ${dateObject.value} ${dateObject.name} ago from ${serverResponse.loc}.`;
+			document.getElementById("counter").innerHTML="Votes: "+currentCount;
+			document.getElementById("counterSubtext").innerHTML=`Last vote was ${dateObject.value} ${dateObject.name} ago from ${serverResponse.loc}.`;
+			document.getElementById("currentFor").innerHTML=`For: ${serverResponse.for}`;
+			document.getElementById("currentAgainst").innerHTML=`Against: ${serverResponse.against}`;
 
 		},'')
 	})
 
-	var button = document.getElementById("againstButton").addEventListener("click", ()=>{
+	var againstButton = document.getElementById("againstButton").addEventListener("click", ()=>{
 
-		console.log("buttonclicked");
+		console.log("AgainstButtonClicked");
 		
-		serverPOST('/push',(res)=>{
+		serverPOST('/pushAgainst',(res)=>{
 			var serverResponse = JSON.parse(res);
+
+			console.log("vasl"+serverResponse);
 			var currentCount = serverResponse.value;
 			var dateObject = (formatDateSince(serverResponse.currentTime,serverResponse.date));
-			document.getElementById("counter").innerHTML="Counter: "+currentCount;
-			document.getElementById("counterSubtext").innerHTML=`It was last clicked ${dateObject.value} ${dateObject.name} ago from ${serverResponse.loc}.`;
+			document.getElementById("counter").innerHTML="Votes: "+currentCount;
+			document.getElementById("counterSubtext").innerHTML=`Last vote was ${dateObject.value} ${dateObject.name} ago from ${serverResponse.loc}.`;
+			document.getElementById("currentFor").innerHTML=`For: ${serverResponse.for}`;
+			document.getElementById("currentAgainst").innerHTML=`Against: ${serverResponse.against}`;
 
 		},'')
 	})
+
+
+
+
+	var showButton = document.getElementById("showResults").addEventListener("click", ()=>{
+
+		if(document.getElementById("currentResults").style.visibility=='hidden'){
+
+			document.getElementById("currentResults").style.visibility='visible';
+			document.getElementById("showResults").innerHTML = "Hide Results";
+		}else{
+
+			document.getElementById("currentResults").style.visibility='hidden';
+			document.getElementById("showResults").innerHTML = "showResults"
+		}
+		
+	});
+
 
 }
+
 window.onload = winload;
 
 function formatDateSince(currentServerTime,dateDifference){
