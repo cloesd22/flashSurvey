@@ -35,7 +35,7 @@ app.get('/',(req,res)=>{
 		var latestValue = resp.data.value;
 		var lastButtonDate = formatDateSince(resp.data.date);
 		var latestDate = resp.data.date;
-		var geo = getCountry(req);
+		var geo = getloc(req,city);
 
 		res.render('thebutton.hbs',{currentcount:latestValue,date:latestDate, dateInital:lastButtonDate,loc:geo});
 
@@ -70,7 +70,7 @@ var getandIncrement = (req,res,data)=>{
 		
 
 		
-		var geo = getCountry(req);
+		var geo = getloc(req,city);
 
 		axios.put('https://btnproject-eef7a.firebaseio.com/counter.json',{value:latestValue,date:Date.now()}).then((resp)=>{
 
@@ -85,15 +85,35 @@ var getandIncrement = (req,res,data)=>{
 })
 */
 
-function getCountry(req){
+function getloc(req,property){
+
+	/*	properties example:
+			{ range: [ 3479297920, 3479301339 ],
+			  country: 'US',
+			  region: 'TX',
+			  city: 'San Antonio',
+			  ll: [ 29.4889, -98.3987 ],
+			  metro: 641,
+			  zip: 78218 }*/
+
 	var ipGuest = req.headers['x-forwarded-for'];
 	var geo = gl.lookup(ipGuest);
 	if(!geo){
 		geo = "Unknown Location"
 	}
 
-	return geo.country;
+	return geo[property];
 
+}
+
+function getCity(req){
+	var ipGuest = req.headers['x-forwarded-for'];
+	var geo = gl.lookup(ipGuest);
+	if(!geo){
+		geo = "Unknown Location"
+	}
+
+	return geo.city;
 }
 
 
