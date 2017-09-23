@@ -35,7 +35,7 @@ app.get('/',(req,res)=>{
 		var latestValue = resp.data.value;
 		var lastButtonDate = formatDateSince(resp.data.date);
 		var latestDate = resp.data.date;
-		var geo = getloc(req,city);
+		var geo = getloc(req,"city");
 
 		res.render('thebutton.hbs',{currentcount:latestValue,date:latestDate, dateInital:lastButtonDate,loc:geo});
 
@@ -70,7 +70,7 @@ var getandIncrement = (req,res,data)=>{
 		
 
 		
-		var geo = getloc(req,city);
+		var geo = getloc(req,"city");
 
 		axios.put('https://btnproject-eef7a.firebaseio.com/counter.json',{value:latestValue,date:Date.now()}).then((resp)=>{
 
