@@ -35,7 +35,9 @@ app.get('/',(req,res)=>{
 		var latestValue = resp.data.value;
 		var lastButtonDate = formatDateSince(resp.data.date);
 		var latestDate = resp.data.date;
-		res.render('thebutton.hbs',{currentcount:latestValue,date:latestDate, dateInital:lastButtonDate});
+		var geo = getCountry(req);
+
+		res.render('thebutton.hbs',{currentcount:latestValue,date:latestDate, dateInital:lastButtonDate,loc:geo});
 
 	});
 	
@@ -68,11 +70,7 @@ var getandIncrement = (req,res,data)=>{
 		
 
 		
-		var geo = gl.lookup(ipGuest);
-
-		if(!geo){
-			geo = "Unknown Location"
-		}
+		var geo = getCountry(req);
 
 		axios.put('https://btnproject-eef7a.firebaseio.com/counter.json',{value:latestValue,date:Date.now()}).then((resp)=>{
 
@@ -86,6 +84,17 @@ var getandIncrement = (req,res,data)=>{
 	res.send('Wer u goin boiss?');
 })
 */
+
+function getCountry(req){
+	var ipGuest = req.headers['x-forwarded-for'];
+	var geo = gl.lookup(ipGuest);
+	if(!geo){
+		geo = "Unknown Location"
+	}
+
+	return geo.country;
+
+}
 
 
 function formatDateSince(dateDifference){
