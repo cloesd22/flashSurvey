@@ -15,3 +15,12 @@
 	width:100%;
 	min-height:952px;
 }
+
+
+  .btn-outline-light:hover, 
+  .btn-outline-light:focus, 
+  .btn-outline-light:active, 
+  .open .dropdown-toggle.btn-outline-light { 
+	color:#000000;
+  } 
+   

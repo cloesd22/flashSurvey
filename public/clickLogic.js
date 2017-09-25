@@ -52,7 +52,9 @@ function winload(){
 			document.getElementById("currentResults").style.visibility='hidden';
 			document.getElementById("showResults").innerHTML = "Show Results"
 		}
-		
+
+		document.getElementById("showResults").blur();
+	
 	});
 
 
