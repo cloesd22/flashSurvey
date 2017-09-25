@@ -295,6 +295,7 @@ function checkLogsForPreviousUser(userIP) {
 					if (elem.userIP == userIP) {
 						console.log(elem.userIP + " matches with " + userIP + "Insert failed");
 						unique = false;
+						resolve(unique);
 					}
 
 				})
