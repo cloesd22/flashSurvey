@@ -1,48 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 	<meta charset="UTF-8">
 	<title>RTV - Real Time Voting</title>
-	<link rel = "stylesheet" type = "text/css" href="./theButton.css">
+	<link rel="stylesheet" type="text/css" href="./theButton.css">
 	<script src="./bundle.js"></script>
 </head>
+
 <body>
 	<div id="backgroundSection">
-		<div class="dark-overlay">		
-			<div class="container text-center" style="margin-bottom:100px;height: 100px;"">
-				<legend class="display-3 text-light" style="margin-top:30%"> For or Against? </legend>
+		<div class="dark-overlay">
+			<div class="container text-center" style="margin-bottom:100px;height: 100px;" ">
+				<legend class="display-3 text-light " style="margin-top:30% "> For or Against? </legend>
 
-				<div class="innercontainer my-5 d-flex flex-row  justify-content-sm-center justify-content-between">
-					<button id="forButton" style="min-width: 100px" class="btn btn-success btn-lg w-25 m-3">For</button>
-					<button id="againstButton"  style="min-width: 100px" class="btn btn-danger btn-lg w-25 m-3">Against</button>
+				<div class="innercontainer my-5 d-flex flex-row justify-content-sm-center justify-content-between ">
+					<button id="forButton" style="min-width: 100px " class="btn btn-success btn-lg w-25 m-3 ">For</button>
+					<button id="againstButton"  style="min-width: 100px " class="btn btn-danger btn-lg w-25 m-3 ">Against</button>
 				</div>
 
-				<legend id="errormsg" class="w-100 display-5 text-danger" style="visibility: hidden"></legend>
+				<legend id="errormsg" class="w-100 display-5 text-danger " style="visibility: hidden "></legend>
 
-				<legend id="counter" class="w-100 display-5 text-light"> Votes: {{currentcount}}</legend>
-				<p id="counterSubtext" class="lead text-white">Last vote occured {{dateInital.value}} {{dateInital.name}} ago from {{loc}}.</p>
+				<legend id="counter" class="w-100 display-5 text-light "> Votes: {{currentcount}}</legend>
+				<p id="counterSubtext" class="lead text-white ">Last vote occured {{dateInital.value}} {{dateInital.name}} ago from {{loc}}.</p>
 
-				<button id="showResults" class="btn btn-outline-light">Show Results</button>
+				<button id="showResults" class="btn btn-outline-light ">Show Results</button>
 
 		
-					<div id="currentResults" style="visibility: hidden;" class="d-flex flex-row my-5 pb-5">
-						<div class="d-inline col-6">
-							<legend id="currentFor" class="text-light display-5">For: {{for}}</legend>
+					<div id="currentResults" style="visibility: hidden; " class="d-flex flex-row my-5 pb-5 ">
+						<div class="d-inline col-6 ">
+							<legend id="currentFor" class="text-light display-5 ">For: {{for}}</legend>
 						</div>
-						<div class="d-inline col-6">
-							<legend id="currentAgainst" class="text-light display-5">Against {{against}}</legend>
+						<div class="d-inline col-6 ">
+							<legend id="currentAgainst" class="text-light display-5 ">Against {{against}}</legend>
 						</div>
 					</div>
 			</div>
 		</div>
 	</div>
 
-	
-
-		<div class="container">
-			<div class="row">
-				<div class="col text-center">
-					<div class="py-4">
+		<div class="container ">
+			<div class="row ">
+				<div class="col text-center ">
+					<div class="py-3 ">
 						<p>Real Time Voting &copy; 2017</p>			
 					</div>
 				</div>
@@ -53,4 +53,4 @@
 
 
 </body>
-</html>	
+</html>

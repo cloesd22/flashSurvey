@@ -8,9 +8,9 @@ function winload() {
 
 
 		serverPOST('/pushFor', (res) => {
-			if (serverResponseCheck(res)) {
-				console.log(res);
-				try{
+
+			console.log(res);
+			try {
 				var serverResponse = JSON.parse(res);
 
 				var currentCount = serverResponse.value;
@@ -19,18 +19,13 @@ function winload() {
 				document.getElementById("counterSubtext").innerHTML = `Last vote was ${dateObject.value} ${dateObject.name} ago from ${serverResponse.loc}.`;
 				document.getElementById("currentFor").innerHTML = `For: ${serverResponse.for}`;
 				document.getElementById("currentAgainst").innerHTML = `Against: ${serverResponse.against}`;
-				}catch(error){
-					
-					document.getElementById("errormsg").innerHTML = "You've already Voted!";
-					document.getElementById("errormsg").style.visibility = 'visible';
-					document.getElementById("forButton").disabled=true;
-					document.getElementById("againstButton").disabled=true;
-				}
-			}else{
-	
+			} catch (error) {
 
+				document.getElementById("errormsg").innerHTML = "You've already Voted!";
+				document.getElementById("errormsg").style.visibility = 'visible';
+				document.getElementById("forButton").disabled = true;
+				document.getElementById("againstButton").disabled = true;
 			}
-
 		}, '')
 	})
 
@@ -38,9 +33,9 @@ function winload() {
 
 		console.log("AgainstButtonClicked");
 		serverPOST('/pushAgainst', (res) => {
-			if (serverResponseCheck(res)) {
 
-				try{
+
+			try {
 				var serverResponse = JSON.parse(res);
 
 				var currentCount = serverResponse.value;
@@ -49,19 +44,15 @@ function winload() {
 				document.getElementById("counterSubtext").innerHTML = `Last vote was ${dateObject.value} ${dateObject.name} ago from ${serverResponse.loc}.`;
 				document.getElementById("currentFor").innerHTML = `For: ${serverResponse.for}`;
 				document.getElementById("currentAgainst").innerHTML = `Against: ${serverResponse.against}`;
-				}catch(error){
-					document.getElementById("errormsg").innerHTML = "You've already Voted!";
-					document.getElementById("errormsg").style.visibility = 'visible';
-					document.getElementById("forButton").disabled=true;
-					document.getElementById("againstButton").disabled=true;
-				}
-			}else{
-
+			} catch (error) {
+				document.getElementById("errormsg").innerHTML = "You've already Voted!";
+				document.getElementById("errormsg").style.visibility = 'visible';
+				document.getElementById("forButton").disabled = true;
+				document.getElementById("againstButton").disabled = true;
 			}
+
 		}, '')
 	})
-
-
 
 
 	var showButton = document.getElementById("showResults").addEventListener("click", () => {
@@ -118,11 +109,3 @@ function formatDateSince(currentServerTime, dateDifference) {
 	return formattedDate;
 }
 
-function serverResponseCheck(response) {
-	// Checks server response to make sure not faulty error code.
-	if (response==("Not pushed" || "Failed" || "Non-unique")) {
-		return false;
-	} else {
-		return true;
-	}
-}

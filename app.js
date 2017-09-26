@@ -21,7 +21,7 @@ const uid = require('uniqid');
 
 
 
-var ddos = new dd({ burst: 12, limit: 12 })
+var ddos = new dd({ burst: 3, limit: 3 })
 var app = express();
 
 app.use('/pushFor', ddos.express);
@@ -296,7 +296,7 @@ function getUserIP(req) {
 }
 
 function formatDateSince(dateDifference) {
-	//takes in dateNow value (miliseconds) and returns
+	//takes in dateNow value (miliseconds) since 1970 and returns
 	//either seconds,minutes,hours,days etc if that value is > 2.
 
 	function convertSeconds(dateValue) {
