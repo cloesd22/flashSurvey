@@ -21,7 +21,7 @@ const uid = require('uniqid');
 
 
 
-var ddos = new dd({ burst: 1, limit: 1 })
+var ddos = new dd({ burst: 12, limit: 12 })
 var app = express();
 
 app.use('/pushFor', ddos.express);
@@ -63,7 +63,7 @@ app.get('/', (req, res) => {
 
 })
 
-app.get('/error', (req,res)=>{
+app.get('/error', (req, res) => {
 	res.render('errorPage.hbs');
 });
 
@@ -73,67 +73,41 @@ app.post('/pushFor', (req, res) => {
 	var userIP = getUserIP(req);
 	var pushStatus = "Not pushed";
 
-	checkLogsForPreviousUser(userIP).then((result) => {
-		if (result) {
+	checkLogsForPreviousUser(userIP).then(() => {
 
-			getandIncrement(req, res, 1, true).then(() => {
-				logUserData(req, 1);
-			}).then(() => {
-				pushStatus = "success";
-			}).catch((err) => {
-				console.log("Push for Failed");
-				pushStatus = "Failed";
-			})
+		getandIncrement(req, res, 1, true).then(() => {
+			logUserData(req, 1);
+			pushStatus = "success";
+		}).catch((err) => {
+			console.log("Push for Failed");
+			pushStatus = "Failed";
+		})
 
-
-		} else {
-
-			pushStatus = "Non-unique";
-			res.send(pushStatus);
-		}
-	})
-
-})
+	}).catch((error) => {
+		pushStatus = "Non-unique";
+		res.send(pushStatus);
+	});
+});
 
 app.post('/pushAgainst', (req, res) => {
 
 	var userIP = getUserIP(req);
 	var pushStatus = "Not pushed";
 
-	checkLogsForPreviousUser(userIP).then((result) => {
-		if (result) {
+	checkLogsForPreviousUser(userIP).then(() => {
 
-			getandIncrement(req, res, 1, false).then(() => {
-				logUserData(req, 0);
-			}).then(()=>{
-				pushStatus = "success";
-			}).catch((err) => {
-				console.log("Push for Failed");
-				pushStatus = "Failed";
-			});
-		
-		} else {
+		getandIncrement(req, res, 1, false).then(() => {
+			logUserData(req, 0);
+			pushStatus = "success";
+		}).catch((err) => {
+			console.log("Push for Failed");
+			pushStatus = "Failed";
+		});
 
-			pushStatus = "Non-unique";
-			res.send(pushStatus);
-		}
+	}).catch((error) => {
+		pushStatus = "Non-unique";
+		res.send(pushStatus);
 	})
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 })
 
 app.get('/hello', (req, res) => {
@@ -167,7 +141,6 @@ var getandIncrement = (req, res, data, vote) => {
 			currentFor = resp.data.for || 0;
 			currentAgainst = resp.data.against || 0;
 
-			//var ipGuest = req.headers['x-forwarded-for'];
 			var ipGuest = getUserIP(req);
 
 			var geo = getloc(null, latestIP, "city");
@@ -253,8 +226,6 @@ function logUserData(req, vote) {
 	// Take current request headers and create table entry:
 	// user ip, time, vote.
 	var userIP = getUserIP(req);
-
-
 	if (!userIP) {
 		//if userIP cannot be resolved it generates a unique code for the user.
 		//this allows the multiple Unidentified IPs to continue voting.
@@ -270,10 +241,9 @@ function logUserData(req, vote) {
 }
 
 function getLogs() {
-
+	//retrieve logs array from database:
 	return new Promise((resolve, reject) => {
 		var logsObject;
-		//retrieve logs array fromd atabase:
 		axios.get('https://btnproject-eef7a.firebaseio.com/logs.json').then((data) => {
 			logsObject = data;
 			resolve(data);
@@ -284,30 +254,38 @@ function getLogs() {
 	})
 }
 
-function checkLogsForPreviousUser(userIP) {
-	//get logs then check the logs file if the specified IP already exists.
-	//If so return false, else return true.
+var checkLogsForPreviousUser = (userIP) => {
+	//return resolve if IP doesn't match any IP's inside the current logs
+	//else reject
 	return new Promise((resolve, reject) => {
-		var unique = true;
+
 		getLogs().then((data) => {
-			if (data.data) {
-				jsonForEach(data, (elem) => {
-					if (elem.userIP == userIP) {
-						console.log(elem.userIP + " matches with " + userIP + "Insert failed");
-						unique = false;
-						resolve(unique);
-					}
-
-				})
+			if(data.data==null){
+				console.log("exittrigger");
+				resolve();
+				return;
 			}
-		}).catch((error) => {
-			console.log("getLogs failed! - " + error);
-			reject();
+			console.log("intrusion");
+			var logArray = [];
+			Object.keys(data.data).forEach(function (key) {
+				logArray.push(data.data[key]);
+			});
+			var resultArray = logArray.filter((data) => {
+				return (data.userIP == userIP);
+			})
+			console.log(resultArray);
+			if (resultArray.length <= 0) {
+				console.log("No duplicates found!")
+				resolve();
+			} else {
+				reject();
+				console.log("duplicates found!")
+			}
+
+
 		})
-		resolve(unique);
-	})
 
-
+	});
 }
 
 function getUserIP(req) {
@@ -316,19 +294,6 @@ function getUserIP(req) {
 	var ip = req.headers['x-forwarded-for'];
 	return ip;
 }
-
-function jsonForEach(object, callback) {
-	//takes in a JSON object, iterates through it.
-
-	Object.keys(object.data).forEach((element) => {
-		callback(object.data[element]);
-	})
-
-
-
-}
-
-
 
 function formatDateSince(dateDifference) {
 	//takes in dateNow value (miliseconds) and returns

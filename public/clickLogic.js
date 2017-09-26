@@ -9,6 +9,7 @@ function winload() {
 
 		serverPOST('/pushFor', (res) => {
 			if (serverResponseCheck(res)) {
+				console.log(res);
 				var serverResponse = JSON.parse(res);
 
 				var currentCount = serverResponse.value;
@@ -18,7 +19,11 @@ function winload() {
 				document.getElementById("currentFor").innerHTML = `For: ${serverResponse.for}`;
 				document.getElementById("currentAgainst").innerHTML = `Against: ${serverResponse.against}`;
 			}else{
-
+	
+				document.getElementById("errormsg").innerHTML = "You've already Voted!";
+				document.getElementById("errormsg").style.visibility = 'visible';
+				document.getElementById("forButton").disabled=true;
+				document.getElementById("againstButton").disabled=true;
 			}
 
 		}, '')
@@ -27,8 +32,6 @@ function winload() {
 	var againstButton = document.getElementById("againstButton").addEventListener("click", () => {
 
 		console.log("AgainstButtonClicked");
-
-
 		serverPOST('/pushAgainst', (res) => {
 			if (serverResponseCheck(res)) {
 				var serverResponse = JSON.parse(res);
@@ -40,7 +43,10 @@ function winload() {
 				document.getElementById("currentFor").innerHTML = `For: ${serverResponse.for}`;
 				document.getElementById("currentAgainst").innerHTML = `Against: ${serverResponse.against}`;
 			}else{
-				
+				document.getElementById("errormsg").innerHTML = "You've already Voted!";
+				document.getElementById("errormsg").style.visibility = 'visible';
+				document.getElementById("forButton").disabled=true;
+				document.getElementById("againstButton").disabled=true;
 			}
 		}, '')
 	})
@@ -98,14 +104,13 @@ function formatDateSince(currentServerTime, dateDifference) {
 			formattedDate = ElementArray[x];
 		}
 	}
-
 	formattedDate.value = Math.floor(formattedDate.value);
 	return formattedDate;
 }
 
 function serverResponseCheck(response) {
 	// Checks server response to make sure not faulty error code.
-	if (response == "Not pushed" || "Failed" || "Non-unique") {
+	if (response===("Not pushed" || "Failed" || "Non-unique")) {
 		return false;
 	} else {
 		return true;
