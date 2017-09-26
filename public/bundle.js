@@ -182,7 +182,7 @@ function formatDateSince(currentServerTime, dateDifference) {
 
 function serverResponseCheck(response) {
 	// Checks server response to make sure not faulty error code.
-	if (response===("Not pushed" || "Failed" || "Non-unique")) {
+	if (response==("Not pushed" || "Failed" || "Non-unique")) {
 		return false;
 	} else {
 		return true;
