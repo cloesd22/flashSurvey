@@ -82,6 +82,7 @@ function winload() {
 		Object(__WEBPACK_IMPORTED_MODULE_0__xhttpFunctions_js__["a" /* serverPOST */])('/pushFor', (res) => {
 			if (serverResponseCheck(res)) {
 				console.log(res);
+				try{
 				var serverResponse = JSON.parse(res);
 
 				var currentCount = serverResponse.value;
@@ -90,12 +91,16 @@ function winload() {
 				document.getElementById("counterSubtext").innerHTML = `Last vote was ${dateObject.value} ${dateObject.name} ago from ${serverResponse.loc}.`;
 				document.getElementById("currentFor").innerHTML = `For: ${serverResponse.for}`;
 				document.getElementById("currentAgainst").innerHTML = `Against: ${serverResponse.against}`;
+				}catch(error){
+					
+					document.getElementById("errormsg").innerHTML = "You've already Voted!";
+					document.getElementById("errormsg").style.visibility = 'visible';
+					document.getElementById("forButton").disabled=true;
+					document.getElementById("againstButton").disabled=true;
+				}
 			}else{
 	
-				document.getElementById("errormsg").innerHTML = "You've already Voted!";
-				document.getElementById("errormsg").style.visibility = 'visible';
-				document.getElementById("forButton").disabled=true;
-				document.getElementById("againstButton").disabled=true;
+
 			}
 
 		}, '')
@@ -106,6 +111,8 @@ function winload() {
 		console.log("AgainstButtonClicked");
 		Object(__WEBPACK_IMPORTED_MODULE_0__xhttpFunctions_js__["a" /* serverPOST */])('/pushAgainst', (res) => {
 			if (serverResponseCheck(res)) {
+
+				try{
 				var serverResponse = JSON.parse(res);
 
 				var currentCount = serverResponse.value;
@@ -114,11 +121,14 @@ function winload() {
 				document.getElementById("counterSubtext").innerHTML = `Last vote was ${dateObject.value} ${dateObject.name} ago from ${serverResponse.loc}.`;
 				document.getElementById("currentFor").innerHTML = `For: ${serverResponse.for}`;
 				document.getElementById("currentAgainst").innerHTML = `Against: ${serverResponse.against}`;
+				}catch(error){
+					document.getElementById("errormsg").innerHTML = "You've already Voted!";
+					document.getElementById("errormsg").style.visibility = 'visible';
+					document.getElementById("forButton").disabled=true;
+					document.getElementById("againstButton").disabled=true;
+				}
 			}else{
-				document.getElementById("errormsg").innerHTML = "You've already Voted!";
-				document.getElementById("errormsg").style.visibility = 'visible';
-				document.getElementById("forButton").disabled=true;
-				document.getElementById("againstButton").disabled=true;
+
 			}
 		}, '')
 	})
