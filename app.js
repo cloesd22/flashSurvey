@@ -2,10 +2,6 @@
 //counts clicks to the button.
 
 //future
-//counts participants(done)
-//presents two buttonscounts both clicks(done)
-
-//rate limitter based on path. ie; you can refresh any amount of times, but only 1 vote.
 //Move Repo to private storage
 //buttons represent options
 //graphs results in real time
@@ -38,8 +34,6 @@ app.set('view engine', 'hbs');
 app.get('/', (req, res) => {
 
 	axios.get('https://btnproject-eef7a.firebaseio.com/counter.json').then((resp) => {
-
-
 		var latestValue = resp.data.value;
 		var lastButtonDate = formatDateSince(resp.data.date);
 		var latestDate = resp.data.date;
@@ -188,7 +182,7 @@ var getandIncrement = (req, res, data, vote) => {
 
 
 function getloc(req, ip, property) {
-
+	//return location from IP.
 	if (req) {
 		var ipGuest = getUserIP(req);
 	} else {
@@ -202,14 +196,14 @@ function getloc(req, ip, property) {
 	var geo = gl.lookup(ipGuest);
 
 
-	if (geo[property] === null) {
+	if (geo==null||
+		geo[property] == null||
+		geo[property].length<1) {
 		geo = "an Unknown Location"
 
 		return geo;
 	}
 	return geo[property];
-
-
 	/*properties example:
 	{range: [ 3479297920, 3479301339 ],
 	country: 'US',
@@ -260,12 +254,11 @@ var checkLogsForPreviousUser = (userIP) => {
 	return new Promise((resolve, reject) => {
 
 		getLogs().then((data) => {
-			if(data.data==null){
+			if (data.data == null) {
 				console.log("exittrigger");
 				resolve();
 				return;
 			}
-			console.log("intrusion");
 			var logArray = [];
 			Object.keys(data.data).forEach(function (key) {
 				logArray.push(data.data[key]);
@@ -281,10 +274,7 @@ var checkLogsForPreviousUser = (userIP) => {
 				reject();
 				console.log("duplicates found!")
 			}
-
-
 		})
-
 	});
 }
 
@@ -299,11 +289,7 @@ function formatDateSince(dateDifference) {
 	//takes in dateNow value (miliseconds) since 1970 and returns
 	//either seconds,minutes,hours,days etc if that value is > 2.
 
-	function convertSeconds(dateValue) {
-		return dateValue / 1000;
-	}
-
-	var seconds = (convertSeconds(Date.now()) - dateDifference / 1000)
+	var seconds = (Date.now()-dateDifference)/1000;
 	var minutes = seconds / 60;
 	var hours = minutes / 60;
 	var days = hours / 60;
@@ -319,7 +305,6 @@ function formatDateSince(dateDifference) {
 	var formattedDate = ElementArray[0];
 
 	for (var x = 1; x < ElementArray.length; x++) {
-
 		if ((ElementArray[x].value < dateValue) && (ElementArray[x].value > 2)) {
 			formattedDate = ElementArray[x];
 		}
@@ -332,3 +317,13 @@ function formatDateSince(dateDifference) {
 
 
 app.listen(port);
+
+module.exports = {
+	formatDateSince,
+	getUserIP,
+	checkLogsForPreviousUser,
+	getLogs,
+	logUserData,
+	getloc,
+	getandIncrement
+}
