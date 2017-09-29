@@ -16,50 +16,34 @@ const uid = require('uniqid');
 
 
 
-
+//-------------------Setup-------------------------//
 var ddos = new dd({ burst: 3, limit: 3 })
 var app = express();
 
+app.set('view engine', 'hbs');
 app.use('/pushFor', ddos.express);
 app.use('/pushAgainst', ddos.express);
-
-
-const port = process.env.PORT || 3001;
-//setup
 app.use(express.static(__dirname + '/public'));
-app.set('view engine', 'hbs');
+const port = process.env.PORT || 3001;
 
-
-//responses
+//-------------------Routes-------------------------//
 app.get('/', (req, res) => {
 
 	axios.get('https://btnproject-eef7a.firebaseio.com/counter.json').then((resp) => {
-		var latestValue = resp.data.value;
-		var lastButtonDate = formatDateSince(resp.data.date);
-		var latestDate = resp.data.date;
-		var latestIP = resp.data.loc;
-		var currentFor = resp.data.for;
-		var currentAgainst = resp.data.against;
-		var geo = getloc(null, latestIP, "city");
 
+		var geo = getloc(null, resp.data.loc, "city");
 		res.render('thebutton.hbs', {
-			currentcount: latestValue,
-			date: latestDate,
-			dateInital: lastButtonDate,
+			currentcount: resp.data.value,
+			date: resp.data.date,
+			dateInital: formatDateSince(resp.data.date),
 			loc: geo,
-			for: currentFor,
-			against: currentAgainst
+			for: resp.data.for,
+			against: resp.data.against
 		});
 	}).catch((err) => {
 		console.log("Error getting base file data -" + err);
 	});
-
-
 })
-
-app.get('/error', (req, res) => {
-	res.render('errorPage.hbs');
-});
 
 
 app.post('/pushFor', (req, res) => {
@@ -71,7 +55,7 @@ app.post('/pushFor', (req, res) => {
 
 		getandIncrement(req, res, 1, true).then(() => {
 			logUserData(req, 1);
-			pushStatus = "success";
+			pushStatus = "Success";
 		}).catch((err) => {
 			console.log("Push for Failed");
 			pushStatus = "Failed";
@@ -92,7 +76,7 @@ app.post('/pushAgainst', (req, res) => {
 
 		getandIncrement(req, res, 1, false).then(() => {
 			logUserData(req, 0);
-			pushStatus = "success";
+			pushStatus = "Success";
 		}).catch((err) => {
 			console.log("Push for Failed");
 			pushStatus = "Failed";
@@ -115,61 +99,76 @@ app.get('/hello', (req, res) => {
 		against: 0
 	};
 
+	var defaultLogs = {};
+
+
 	axios.put('https://btnproject-eef7a.firebaseio.com/counter.json', defaultVotes).catch((err) => {
-		console.log("Error Putting /hello seed -" + err);
+		console.log("Error Putting /hello seed counter-" + err);
+	});
+
+	axios.put('https://btnproject-eef7a.firebaseio.com/logs.json', defaultLogs).catch((err) => {
+		console.log("Error Putting /hello seed logs -" + err);
 	});
 
 })
+
+app.get('/*', (req, res) => {
+	res.render('errorPage.hbs');
+});
+
+//-------------------Functional elements -------------------------//
+
+function sendVote(res,vote,datapackage){
+
+	var geo = getloc(null, datapackage.latestIP, "city");
+		
+	axios.put('https://btnproject-eef7a.firebaseio.com/counter.json', { 
+		
+		value: datapackage.value,
+	 	date: Date.now(),
+		loc: datapackage.loc,
+	   	for: datapackage.for + vote.for,
+		against: datapackage.against + vote.against
+	
+	}).then(() => {
+
+		res.send({
+			value: datapackage.value,
+			date: datapackage.date,
+			currentTime: Date.now(),
+			loc: geo,
+			for: datapackage.for + vote.for,
+			against: datapackage.against + vote.against
+		});
+
+	}).catch((err) => {
+		console.log("Error Sending getandIncrement YesVote data -" + err);
+		this.reject();
+	})
+}
+
 
 
 var getandIncrement = (req, res, data, vote) => {
 	//gets increments by argument and returns value. 
 	//first argument is the response object, that has method .send to send to response.
 	return new Promise((resolve, reject) => {
+
 		axios.get('https://btnproject-eef7a.firebaseio.com/counter.json').then((resp) => {
-
-			var latestValue = resp.data.value;
-			latestValue = latestValue + data;
-			latestDate = resp.data.date;
-			latestIP = resp.data.loc;
-			currentFor = resp.data.for || 0;
-			currentAgainst = resp.data.against || 0;
-
-			var ipGuest = getUserIP(req);
-
-			var geo = getloc(null, latestIP, "city");
-
-
-			if (vote == true) {
-
-				axios.put('https://btnproject-eef7a.firebaseio.com/counter.json', { value: latestValue, date: Date.now(), loc: ipGuest, for: currentFor + 1, against: currentAgainst }).then(() => {
-					res.send({
-						value: latestValue,
-						date: latestDate,
-						currentTime: Date.now(),
-						loc: geo,
-						for: currentFor + 1,
-						against: currentAgainst
-					});
-				}).catch((err) => {
-					console.log("Error Sending getandIncrement YesVote data -" + err);
-					reject();
-				})
-			} else {
-				axios.put('https://btnproject-eef7a.firebaseio.com/counter.json', { value: latestValue, date: Date.now(), loc: ipGuest, for: currentFor, against: currentAgainst + 1 }).then(() => {
-					res.send({
-						value: latestValue,
-						date: latestDate,
-						currentTime: Date.now(),
-						loc: geo,
-						for: currentFor,
-						against: currentAgainst + 1
-					});
-				}).catch((err) => {
-					console.log("Error Sending getandIncrement NoVote data -" + err);
-					reject();
-				})
+			var ipGuest = getUserIP(req); 
+			var datapackage = 
+			{
+				'value':resp.data.value+data,
+				'date':resp.data.date,
+				'latestIp':resp.data.loc,
+				'loc':ipGuest,
+				'for':resp.data.for || 0,
+				'against':resp.data.against || 0
 			}
+
+			vote = vote==1 ? {for:1,against:0}:{for:0,against:1};
+			sendVote(res,vote,datapackage);
+
 		}).then((data) => {
 			resolve();
 		}).catch((err) => {
@@ -198,11 +197,12 @@ function getloc(req, ip, property) {
 
 	if (geo==null||
 		geo[property] == null||
-		geo[property].length<1) {
+		geo[property].length<1) 
+	{
 		geo = "an Unknown Location"
-
 		return geo;
 	}
+
 	return geo[property];
 	/*properties example:
 	{range: [ 3479297920, 3479301339 ],
@@ -318,6 +318,7 @@ function formatDateSince(dateDifference) {
 
 app.listen(port);
 
+//-------------------Testing Exports-------------------------//
 module.exports = {
 	formatDateSince,
 	getUserIP,

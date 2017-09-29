@@ -10,9 +10,9 @@ describe('date function tests',() => {
         
     })
 
-    it('It should produce a date greater than 30 minutes',() => {
-        var value = app.formatDateSince((1506601680946));
-        expect(value.value).to.be.above(30);     
+    it('It should count 2 seconds for a date 2.8 seconds ago',() => {
+        var value = app.formatDateSince(Date.now()-2800);
+           expect(value.value).to.be.equal(2);  
     })
 
     it('it should make sure the current date is 0 Seconds from itself',() => {
@@ -21,15 +21,10 @@ describe('date function tests',() => {
         expect(value.name).to.be.equal('Seconds');             
     })
 
-    it('It should count 5 seconds, for a date 5 seconds ago', function(done){
+    it('It should count 5 seconds, for a date 5 seconds ago', function(){
         var value = app.formatDateSince((Date.now()-5000));
-        this.timeout(6000);
-        setTimeout(() => {
-            expect(value.value).to.be.equal(5); 
-            expect(value.name).to.be.equal('Seconds'); 
-            done();
-        },5000)
-
+        expect(value.value).to.be.equal(5); 
+        expect(value.name).to.be.equal('Seconds'); 
     })
 })  
 
