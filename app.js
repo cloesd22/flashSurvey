@@ -7,18 +7,20 @@
 //graphs results in real time
 
 const express = require('express');
-const axios = require('axios');
 const hbs = require('hbs');
 const dd = require('ddos');
 const gl = require('geoip-lite');
 const uid = require('uniqid');
 
+var dba = require('./firebaseDatabaseAP.js');
 
 
 
 //-------------------Setup-------------------------//
 var ddos = new dd({ burst: 3, limit: 3 })
 var app = express();
+db = new dba.FirebaseDBAAP('logs');
+dbC = new dba.FirebaseDBAAP('counter');
 
 app.set('view engine', 'hbs');
 app.use('/pushFor', ddos.express);
@@ -26,23 +28,32 @@ app.use('/pushAgainst', ddos.express);
 app.use(express.static(__dirname + '/public'));
 const port = process.env.PORT || 3001;
 
+var latestCount;
+
+function updateLatestCount(value){
+	latestCount = value;
+}
+
+dbC.addChangeListener(updateLatestCount).then((results) => {
+	console.log("Database Listener Connected");
+}).catch((err)=>{
+	console.log("Database Listener failed to connect -" + err);
+})
+
 //-------------------Routes-------------------------//
 app.get('/', (req, res) => {
 
-	axios.get('https://btnproject-eef7a.firebaseio.com/counter.json').then((resp) => {
-
-		var geo = getloc(null, resp.data.loc, "city");
-		res.render('thebutton.hbs', {
-			currentcount: resp.data.value,
-			date: resp.data.date,
-			dateInital: formatDateSince(resp.data.date),
-			loc: geo,
-			for: resp.data.for,
-			against: resp.data.against
-		});
-	}).catch((err) => {
-		console.log("Error getting base file data -" + err);
+	var geo = getloc(null, latestCount.loc, "city");
+	
+	res.render('thebutton.hbs', {
+		currentcount: latestCount.value,
+		date: latestCount.date,
+		dateInital: formatDateSince(latestCount.date),
+		loc: geo,
+		for: latestCount.for,
+		against: latestCount.against
 	});
+
 })
 
 
@@ -53,7 +64,7 @@ app.post('/pushFor', (req, res) => {
 
 	checkLogsForPreviousUser(userIP).then(() => {
 
-		getandIncrement(req, res, 1, true).then(() => {
+		getandIncrement(req, res, true).then(() => {
 			logUserData(req, 1);
 			pushStatus = "Success";
 		}).catch((err) => {
@@ -74,7 +85,7 @@ app.post('/pushAgainst', (req, res) => {
 
 	checkLogsForPreviousUser(userIP).then(() => {
 
-		getandIncrement(req, res, 1, false).then(() => {
+		getandIncrement(req, res, false).then(() => {
 			logUserData(req, 0);
 			pushStatus = "Success";
 		}).catch((err) => {
@@ -101,14 +112,18 @@ app.get('/hello', (req, res) => {
 
 	var defaultLogs = {};
 
+	dbC.OverwriteSPEC(defaultVotes).then(()=>{
+		console.log("Wiping all votes");
+	}).catch((err) => {
+		console.log("Failed to wipe votes -" + err);
+	})
 
-	axios.put('https://btnproject-eef7a.firebaseio.com/counter.json', defaultVotes).catch((err) => {
-		console.log("Error Putting /hello seed counter-" + err);
-	});
+	db.OverwriteSPEC(defaultLogs).then(()=>{
+		console.log("Wiping all logs");
+	}).catch((err) => {
+		console.log("Failed to wipe logs -" + err);
+	})
 
-	axios.put('https://btnproject-eef7a.firebaseio.com/logs.json', defaultLogs).catch((err) => {
-		console.log("Error Putting /hello seed logs -" + err);
-	});
 
 })
 
@@ -118,20 +133,23 @@ app.get('/*', (req, res) => {
 
 //-------------------Functional elements -------------------------//
 
-function sendVote(res,vote,datapackage){
+function sendVote(res, vote, datapackage) {
 
 	var geo = getloc(null, datapackage.latestIP, "city");
-		
-	axios.put('https://btnproject-eef7a.firebaseio.com/counter.json', { 
-		
-		value: datapackage.value,
-	 	date: Date.now(),
-		loc: datapackage.loc,
-	   	for: datapackage.for + vote.for,
-		against: datapackage.against + vote.against
-	
-	}).then(() => {
 
+	if(!datapackage.loc){
+		datapackage.loc = "192.168.1.6";
+	}
+
+	var data = {value: datapackage.value,
+				date: Date.now(),
+				loc: datapackage.loc,
+				for: datapackage.for + vote.for,
+				against: datapackage.against + vote.against}
+
+	
+
+	dbC.OverwriteSPEC(data).then((result) => {
 		res.send({
 			value: datapackage.value,
 			date: datapackage.date,
@@ -139,43 +157,35 @@ function sendVote(res,vote,datapackage){
 			loc: geo,
 			for: datapackage.for + vote.for,
 			against: datapackage.against + vote.against
-		});
-
-	}).catch((err) => {
-		console.log("Error Sending getandIncrement YesVote data -" + err);
-		this.reject();
+		})
+	}).catch((err)=>{
+		console.log("Error incrementing Counter! -"+ err);
 	})
+
 }
 
 
 
-var getandIncrement = (req, res, data, vote) => {
+var getandIncrement = (req, res, vote) => {
 	//gets increments by argument and returns value. 
 	//first argument is the response object, that has method .send to send to response.
 	return new Promise((resolve, reject) => {
 
-		axios.get('https://btnproject-eef7a.firebaseio.com/counter.json').then((resp) => {
-			var ipGuest = getUserIP(req); 
-			var datapackage = 
+		var ipGuest = getUserIP(req);
+		var datapackage =
 			{
-				'value':resp.data.value+data,
-				'date':resp.data.date,
-				'latestIp':resp.data.loc,
-				'loc':ipGuest,
-				'for':resp.data.for || 0,
-				'against':resp.data.against || 0
+				'value': (latestCount.value||0) + 1,
+				'date': latestCount.date,
+				'latestIp': latestCount.loc,
+				'loc': ipGuest,
+				'for': latestCount.for || 0,
+				'against': latestCount.against || 0
 			}
 
-			vote = vote==1 ? {for:1,against:0}:{for:0,against:1};
-			sendVote(res,vote,datapackage);
-
-		}).then((data) => {
-			resolve();
-		}).catch((err) => {
-			console.log("Error Getting getandIncrement data -" + err);
-			reject();
-		});
-	})
+		vote = vote == 1 ? { for: 1, against: 0 } : { for: 0, against: 1 };
+		sendVote(res, vote, datapackage)
+		resolve();
+	}) 
 }
 
 
@@ -195,10 +205,9 @@ function getloc(req, ip, property) {
 	var geo = gl.lookup(ipGuest);
 
 
-	if (geo==null||
-		geo[property] == null||
-		geo[property].length<1) 
-	{
+	if (geo == null ||
+		geo[property] == null ||
+		geo[property].length < 1) {
 		geo = "an Unknown Location"
 		return geo;
 	}
@@ -226,25 +235,24 @@ function logUserData(req, vote) {
 		userIP = "Unknown" + uid();
 	}
 
-	var data = { userIP: userIP, vote: vote }
-	axios.post('https://btnproject-eef7a.firebaseio.com/logs.json', data).then((resp) => {
+	
+	db.CreateSPEC({'userIP':userIP,'vote':vote}).then((data)=>{
 		console.log(`Data logged: User: ${userIP}, Vote: ${vote}`);
-	}).catch((err) => {
+	}).catch((err)=>{
 		console.log("Error posting in log user data -" + err);
-	});
+	})
 }
 
 function getLogs() {
 	//retrieve logs array from database:
 	return new Promise((resolve, reject) => {
-		var logsObject;
-		axios.get('https://btnproject-eef7a.firebaseio.com/logs.json').then((data) => {
-			logsObject = data;
-			resolve(data);
-		}).catch((error) => {
-			console.log("error retrieving logs - " + error);
-			reject();
-		})
+
+		db.ReadALLRT().then((data)=>{
+			resolve(data)
+        }).catch((err)=>{
+			reject("error getting logs - "+ err);
+		});
+
 	})
 }
 
@@ -253,21 +261,8 @@ var checkLogsForPreviousUser = (userIP) => {
 	//else reject
 	return new Promise((resolve, reject) => {
 
-		getLogs().then((data) => {
-			if (data.data == null) {
-				console.log("exittrigger");
-				resolve();
-				return;
-			}
-			var logArray = [];
-			Object.keys(data.data).forEach(function (key) {
-				logArray.push(data.data[key]);
-			});
-			var resultArray = logArray.filter((data) => {
-				return (data.userIP == userIP);
-			})
-			console.log(resultArray);
-			if (resultArray.length <= 0) {
+		db.ReadSPEC('userIP',userIP).then((data) => {
+			if (data == "empty") {
 				console.log("No duplicates found!")
 				resolve();
 			} else {
@@ -275,7 +270,7 @@ var checkLogsForPreviousUser = (userIP) => {
 				console.log("duplicates found!")
 			}
 		})
-	});
+	})
 }
 
 function getUserIP(req) {
@@ -289,7 +284,7 @@ function formatDateSince(dateDifference) {
 	//takes in dateNow value (miliseconds) since 1970 and returns
 	//either seconds,minutes,hours,days etc if that value is > 2.
 
-	var seconds = (Date.now()-dateDifference)/1000;
+	var seconds = (Date.now() - dateDifference) / 1000;
 	var minutes = seconds / 60;
 	var hours = minutes / 60;
 	var days = hours / 60;
