@@ -99,7 +99,7 @@ app.post('/pushAgainst', (req, res) => {
 	})
 })
 
-app.get('/hello', (req, res) => {
+app.get('/reset', (req, res) => {
 	//resets the voting
 
 	var defaultVotes = {
